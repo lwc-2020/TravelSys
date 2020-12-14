@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>中软旅游-搜索</title>
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" href="css/search.css">
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/getParameter.js"></script>
+    <!-- 1. 导入CSS的全局样式 -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- 2. jQuery导入，建议使用1.9以上的版本 -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- 3. 导入bootstrap的js文件 -->
+    <script src="js/bootstrap.min.js"></script>
+    <!--引入你的js代码-->
+    <script>
+
+
+        function upPage() {
+
+                var currentPage = getParameter("currentPage");
+
+               //alert(currentPage);
+                --currentPage;
+                console.log(currentPage)
+            if (currentPage<0){
+                alert("???");
+                currentPage=0;
+
+            }
+
+            //$("#upPage").attr("href",'route_list.html?cid='+getParameter("cid")+'&rname='+getParameter("rname")+'&currentPage='+currentPage+'&pageSize=5')
+           location.href='route_list.html?cid='+getParameter("cid")+'&rname='+getParameter("rname")+'&currentPage='+currentPage+'&pageSize=5';
+
+        }
+        function downPage(totalPage) {
+
+            var currentPage = getParameter("currentPage");
+            //alert(currentPage);
+            ++currentPage;
+            console.log(currentPage)
+            if (currentPage>=totalPage){
+                //alert("???")//
+                currentPage=(totalPage-1);
+
+            }
+            //$("#upPage").attr("href",'route_list.html?cid='+getParameter("cid")+'&rname='+getParameter("rname")+'&currentPage='+currentPage+'&pageSize=5')
+            location.href='route_list.html?cid='+getParameter("cid")+'&rname='+getParameter("rname")+'&currentPage='+currentPage+'&pageSize=5';
+
+        }
+        $(function () {
+            //测试
+
+
+
+            //测试pageBean
+            // $.post("route/getPageBean",function (resp) {
+            //     $(resp).each(function (index, item) {
+            //         console.log(item);
+            //     })
+            //
+            //     alert(resp.dataList[1].rname);
+            // },"json")
+
+
+
+            //获得从head.html 页面传递的 cid的值  location.search 可以获得路径? 后面的数据
+            // 例如http://localhost:8085/travel/route_list.html?cid=1 获得的是 cid=1
+              // getParameter("cid")
+            //获得总记录数
+
+            $.post("route/getCurrentPageBean",{cid:getParameter("cid"),rname:getParameter("rname")},function (respTotalCount) {
+                //alert(respTotalCount);
+                var totalPage = Math.ceil(respTotalCount / 5);
+                $("#count2").html(respTotalCount);
+                $("#count1").html(totalPage);
+
+                var pageLi = "";
+                if (getParameter("currentPage") == 0) {
+                    var fistPage = '<li class="curPage"><a href="route_list.html?cid=' + getParameter("cid") + '&rname=' + getParameter("rname") + '&currentPage=0&pageSize=5">首页</a></li>';
+                    pageLi += fistPage;
+                } else {
+                    var fistPage = '<li><a href="route_list.html?cid=' + getParameter("cid") + '&rname=' + getParameter("rname") + '&currentPage=0&pageSize=5">首页</a></li>';
+                    pageLi += fistPage;
+                }
+                var fistPage = '<li><a href="route_list.html?cid=' + getParameter("cid") + '&rname=' + getParameter("rname") + '&currentPage=0&pageSize=5">首页</a></li>';
+                var currentPage = getParameter("currentPage");
+                if (currentPage!=0) {
+
+                    var beforePage = '<li class="threeword"><a href="javascript:upPage();" id="upPage" onclick="">上一页</a></li>';
+                    pageLi += beforePage;
+                }
+
+
+
+
+
+
+                var beginNum;//分页条第一个数字
+                var endNum;//分页条最后一个数字
+
+                if(totalPage<10)//如果总页数小于10页
+                {
+                    beginNum=0;
+                    endNum=totalPage;
+                }
+                else//如果总页数大于等于10页
+                {
+                    beginNum=currentPage-5;
+                    endNum=currentPage-(-4);
+                    if(beginNum<0)//currentPage-5可能会是一个小于等于0的数，也就是用户在浏览1,2,3,4,5页时的情况
+                    {
+                        beginNum=0;//纠正回来
+                        endNum=beginNum+9;
+                    }
+                    if(endNum>totalPage)//用户在浏览倒数1,2,3,4页时的情况
+                    {
+                        endNum=totalPage-1;//纠正回来，让分页条最后一个数字为总的页数
+                        beginNum=endNum-9;
+                    }
+
+                }
+
+                console.log("当前页"+currentPage+"----开始"+beginNum+"----结束"+endNum);
+                var cid = getParameter("cid");
+                var rname=getParameter("rname")
+                for(var i=beginNum;i<=(endNum-1);i++){
+                    if(i==currentPage){
+                        pageLi+=' <li  class="curPage"><a href="route_list.html?rname='+rname+'&cid='+cid+'&currentPage='+i+'&pageSize=5">'+(i+1)+'</a></li>';
+                    }else {
+                        pageLi+=' <li><a href="route_list.html?rname='+rname+'&cid='+cid+'&currentPage='+i+'&pageSize=5">'+(i+1)+'</a></li>';
+                    }
+
+                }
+                if (currentPage!=(totalPage-1)){
+                    var nextPage='<li class="threeword"><a href="javascript:downPage('+totalPage+');">下一页</a></li>';
+                    pageLi+=nextPage;
+                }
+
+                var lastPage=' <li class="threeword"><a href="route_list.html?rname='+rname+'&cid='+cid+'&currentPage='+(totalPage-1)+'&pageSize=5">末页</a></li>';
+
+                pageLi+=lastPage;
+                //填充html
+                $("#pageUl").html(pageLi);
+
+
+            },"json");
+            //发送ajax请求 获得对应的列表数据
+            $.post("route/getRouteByCid",{cid:getParameter("cid"),rname:getParameter("rname"),currentPage:getParameter("currentPage"),pageSize:5},function (responnseData) {
+                //遍历json对象  拼装数据  填充对应的html标签
+                var lis="";
+                for(var i=0;i<responnseData.length;i++){
+                    var routeEle=responnseData[i];
+                    lis+='<li>\n' +
+                        '                            <div class="img"><img width="299px" src="'+routeEle.rimage+'" alt=""></div>\n' +
+                        '                            <div class="text1">\n' +
+                        '                                <p>'+routeEle.rname+'</p>\n' +
+                        '                                <br/>\n' +
+                        '                                <p>'+routeEle.routeIntroduce+'</p>\n' +
+                        '                            </div>\n' +
+                        '                            <div class="price">\n' +
+                        '                                <p class="price_num">\n' +
+                        '                                    <span>&yen;</span>\n' +
+                        '                                    <span>'+routeEle.price+'</span>\n' +
+                        '                                    <span>起</span>\n' +
+                        '                                </p>\n' +
+                        '                                <p><a href="route_detail.html">查看详情</a></p>\n' +
+                        '                            </div>\n' +
+                        '                        </li>';
+                }
+                //填充li到ul中
+                $("#routeListUl").html(lis);
+                /*          <li><a href="">首页</a></li>
+                            <li class="threeword"><a href="#">上一页</a></li>
+                            <li><a href="#">1</a></li>
+                            <li><a href="#">2</a></li>
+                            <li><a href="#">3</a></li>
+                            <li><a href="#">4</a></li>
+                            <li><a href="#">5</a></li>
+                            <li><a href="#">6</a></li>
+                            <li><a href="#">7</a></li>
+                            <li><a href="#">8</a></li>
+                            <li><a href="#">9</a></li>
+                            <li><a href="#">10</a></li>
+                            <li class="threeword"><a href="javascript:;">下一页</a></li>
+                            <li class="threeword"><a href="javascript:;">末页</a></li>
+                   */
+                //处理分页
+
+            },"json");
+
+            //定义一个方法   实现  根据cid 和当前页  查询数据
+
+
+
+        });
+    </script>
+</head>
+<body>
+<!--引入头部-->
+<div id="header"></div>
+    <div class="page_one">
+        <div class="contant">
+            <div class="crumbs">
+                <img src="images/search.png" alt="">
+                <p>中软旅行><span>搜索结果</span></p>
+            </div>
+            <div class="xinxi clearfix">
+                <div class="left">
+                    <div class="header">
+                        <span>商品信息</span>
+                        <span class="jg">价格</span>
+                    </div>
+                    <ul id="routeListUl">
+
+                    </ul>
+                    <div class="page_num_inf">
+                        <i></i> 共
+                        <span id="count1">12</span>页<span id="count2">132</span>条
+                    </div>
+                    <div class="pageNum">
+                        <ul id="pageUl">
+
+                        </ul>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="top">
+                        <div class="hot">HOT</div>
+                        <span>热门推荐</span>
+                    </div>
+                    <ul>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--引入头部-->
+    <div id="footer"></div>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+</body>
+
+</html>
